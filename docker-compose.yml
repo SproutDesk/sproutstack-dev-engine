@@ -1,0 +1,139 @@
+version: '2.1'
+services:
+    nginx:
+        image: sproutstack/nginx
+        container_name: ss_nginx
+        volumes:
+            - ./workspace:/workspace
+            - ./logs/nginx:/var/log/nginx/
+            - ./nginx/sites/:/etc/nginx/sites/
+            - ./nginx/templates/:/etc/nginx/templates/
+            - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+            - ./nginx/ports.nginx:/etc/nginx/ports.nginx
+            - ./nginx/fastcgi_params:/etc/nginx/fastcgi_params
+        network_mode: "host"
+        command: /bin/ash -c "(adduser -D -H -u ${USERID:-1000} www-data || true) >/dev/null && exec nginx -g 'daemon off;'"
+    varnish:
+        image: sproutstack/varnish
+        container_name: ss_varnish
+        network_mode: "host"
+        volumes:
+            - ./varnish/default.vcl:/etc/varnish/default.vcl
+            - ./logs/varnish:/var/log/varnish
+    phpfpm56:
+        image: sproutstack/phpfpm:5.6${PHP_EXTENSION}
+        container_name: ss_phpfpm5.6
+        user: '${USERID:-1000}:${GROUPID:-1000}'
+        cap_add:
+            - SYS_PTRACE
+        volumes:
+            - ./workspace:/workspace
+            - ./logs/phpfpm56:/var/log/php-fpm
+            - ./php/5.6/www.conf:/usr/local/etc/php-fpm.d/www.conf
+            - ./php/5.6/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+            - /etc/passwd:/etc/passwd:ro
+        network_mode: "host"
+    phpfpm70:
+        image: sproutstack/phpfpm:7.0${PHP_EXTENSION}
+        container_name: ss_phpfpm7.0
+        user: '${USERID:-1000}:${GROUPID:-1000}'
+        cap_add:
+            - SYS_PTRACE
+        volumes:
+            - ./workspace:/workspace
+            - ./logs/phpfpm70:/var/log/php-fpm
+            - ./php/7.0/www.conf:/usr/local/etc/php-fpm.d/www.conf
+            - ./php/7.0/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+            - /etc/passwd:/etc/passwd:ro
+        network_mode: "host"
+    phpfpm71:
+        image: sproutstack/phpfpm:7.1${PHP_EXTENSION}
+        container_name: ss_phpfpm7.1
+        user: '${USERID:-1000}:${GROUPID:-1000}'
+        cap_add:
+            - SYS_PTRACE
+        volumes:
+            - ./workspace:/workspace
+            - ./logs/phpfpm71:/var/log/php-fpm
+            - ./php/7.1/www.conf:/usr/local/etc/php-fpm.d/www.conf
+            - ./php/7.1/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+            - /etc/passwd:/etc/passwd:ro
+        network_mode: "host"
+    phpfpm72:
+        image: sproutstack/phpfpm:7.2${PHP_EXTENSION}
+        container_name: ss_phpfpm7.2
+        user: '${USERID:-1000}:${GROUPID:-1000}'
+        cap_add:
+            - SYS_PTRACE
+        volumes:
+            - ./workspace:/workspace
+            - ./logs/phpfpm72:/var/log/php-fpm
+            - ./php/7.2/www.conf:/usr/local/etc/php-fpm.d/www.conf
+            - ./php/7.2/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+            - /etc/passwd:/etc/passwd:ro
+        network_mode: "host"
+    phpfpm73:
+        image: sproutstack/phpfpm:7.3${PHP_EXTENSION}
+        container_name: ss_phpfpm7.3
+        user: '${USERID:-1000}:${GROUPID:-1000}'
+        cap_add:
+            - SYS_PTRACE
+        volumes:
+            - ./workspace:/workspace
+            - ./logs/phpfpm73:/var/log/php-fpm
+            - ./php/7.3/www.conf:/usr/local/etc/php-fpm.d/www.conf
+            - ./php/7.3/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+            - /etc/passwd:/etc/passwd:ro
+        network_mode: "host"
+    phpfpm74:
+        image: sproutstack/phpfpm:7.4${PHP_EXTENSION}
+        container_name: ss_phpfpm7.4
+        user: '${USERID:-1000}:${GROUPID:-1000}'
+        cap_add:
+            - SYS_PTRACE
+        volumes:
+            - ./workspace:/workspace
+            - ./logs/phpfpm74:/var/log/php-fpm
+            - ./php/7.4/www.conf:/usr/local/etc/php-fpm.d/www.conf
+            - ./php/7.4/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+            - /etc/passwd:/etc/passwd:ro
+        network_mode: "host"
+    mysql:
+        image: mysql:5.7
+        container_name: ss_mysql
+        ports:
+            - "3306:3306"
+        environment:
+            - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-root}
+        volumes:
+            - mysql:/var/lib/mysql
+    redis:
+        image: redis:alpine
+        container_name: ss_redis
+        ports:
+            - "6379:6379"
+    phpmyadmin:
+        image: phpmyadmin/phpmyadmin
+        container_name: ss_phpmyadmin
+        ports:
+            - 8080:80
+        environment:
+            PMA_HOST: mysql
+    mailhog:
+        image: mailhog/mailhog
+        container_name: ss_mailhog
+        ports:
+            - "25:1025"
+            - "8025:8025"
+    blackfire:
+        image: blackfire/blackfire:1.25.0
+        container_name: ss_blackfire
+        volumes:
+            - "./php/blackfire-agent.ini:/etc/blackfire-agent.ini"
+        environment:
+            - BLACKFIRE_CONFIG=/etc/blackfire-agent.ini
+        env_file:
+            - .env
+        network_mode: "host"
+volumes:
+    mysql:
