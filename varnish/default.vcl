@@ -46,9 +46,11 @@ sub vcl_init {
 
 sub vcl_recv {
     set req.backend_hint = app.backend();
-    
+
     # Remove port from host header
-    set req.http.Host = regsub(req.http.Host, ":[0-9]+", "");
+    if (req.http.Host) {
+        set req.http.Host = regsub(req.http.Host, ":[0-9]+", "");
+    }
 
     if ( req.url ~ "wp-admin"
       || req.url ~ "wp-includes"
@@ -94,7 +96,7 @@ sub vcl_recv {
         req.method != "OPTIONS" &&
         req.method != "PATCH" &&
         req.method != "DELETE") {
-        return (synth(404, "Non-valid HTTP method!"));
+        return (pipe);
     }
 
     # websocket support (https://www.varnish-cache.org/docs/4.0/users-guide/vcl-example-websockets.html)
@@ -115,11 +117,18 @@ sub vcl_recv {
         set req.url = regsub(req.url, "\?$", "");
     }
 
+    # Strip hash, server doesn't need it.
+    if (req.url ~ "\#") {
+        set req.url = regsub(req.url, "\#.*$", "");
+    }
+
     # Strip a trailing ? if it exists
     if (req.url ~ "\?$") {
         set req.url = regsub(req.url, "\?$", "");
     }
 
+    # Remove the "has_js" cookie
+    set req.http.Cookie = regsuball(req.http.Cookie, "has_js=[^;]+(; )?", "");
     # Remove Google Analytics cookies
     set req.http.Cookie = regsuball(req.http.Cookie, "__utm.=[^;]+(; )?", "");
     set req.http.Cookie = regsuball(req.http.Cookie, "_ga=[^;]+(; )?", "");
@@ -160,9 +169,9 @@ sub vcl_recv {
 }
 
 sub vcl_pipe {
-  
+
     set bereq.http.Connection = "Close";
-    
+
     # Websocket support https://www.varnish-cache.org/docs/4.0/users-guide/vcl-example-websockets.html
     if (req.http.upgrade) {
         set bereq.http.upgrade = req.http.upgrade;
@@ -174,7 +183,7 @@ sub vcl_pipe {
 sub vcl_deliver {
     # Add debug header to see if it's a HIT/MISS and the number of hits, only if you're an editor.
     #if (client.ip ~ editors){
-        if (obj.hits > 0) { 
+        if (obj.hits > 0) {
             set resp.http.X-Cache = "HIT";
         } else {
             set resp.http.X-Cache = "MISS";
@@ -189,7 +198,7 @@ sub vcl_deliver {
     unset resp.http.X-Varnish;
     unset resp.http.Via;
     unset resp.http.X-Generator;
-    set resp.http.X-Powered-By = "SproutStack";
+    set resp.http.X-Powered-By = "SproutStack/Varnish";
 
     return (deliver);
 }
@@ -203,9 +212,13 @@ sub vcl_hash {
     } else {
         hash_data(server.ip);
     }
-    
+
     if (req.http.Cookie) {
         hash_data(req.http.Cookie);
+    }
+
+    if (req.http.X-Forwarded-Proto) {
+        hash_data(req.http.X-Forwarded-Proto);
     }
 }
 
@@ -284,9 +297,6 @@ sub vcl_hit {
                 set req.http.grace = "normal(limited)";
             }
             return (deliver);
-        } else {
-            # No candidate for grace. Fetch fresh object
-            return (miss);
         }
     } else {
         # Backend sick. Use full grace
@@ -295,11 +305,6 @@ sub vcl_hit {
                 set req.http.grace = "full";
             }
             return (deliver);
-        } else {
-            # no graced object.
-            return (miss);
         }
     }
-    # fetch & deliver once we get the result
-    return (miss);
 }
