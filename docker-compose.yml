@@ -10,6 +10,7 @@ services:
             - ./nginx/templates/:/etc/nginx/templates/
             - ./nginx/nginx.conf:/etc/nginx/nginx.conf
             - ./nginx/ports.nginx:/etc/nginx/ports.nginx
+            - phpmyadmin_data:/phpmyadmin:ro
         network_mode: "host"
         command: /bin/ash -c "(adduser -D -H -u ${USERID:-1000} www-data || true) >/dev/null && exec nginx -g 'daemon off;'"
     varnish:
@@ -118,12 +119,15 @@ services:
         ports:
             - "6379:6379"
     phpmyadmin:
-        image: phpmyadmin/phpmyadmin
+        image: sproutstack/phpmyadmin
         container_name: ss_phpmyadmin
         ports:
-            - 8080:80
+            - 9306:9000
+        volumes:
+            - phpmyadmin_data:/phpmyadmin
         environment:
             PMA_HOST: mysql
+            PMA_ABSOLUTE_URI: phpmyadmin.local
     mailhog:
         image: mailhog/mailhog
         container_name: ss_mailhog
@@ -144,3 +148,4 @@ services:
         command: /bin/ash -c "/bin/${BLACKFIRE_ENABLE:-false} && blackfire-agent"
 volumes:
     mysql:
+    phpmyadmin_data:
