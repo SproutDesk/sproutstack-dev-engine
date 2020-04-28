@@ -39,21 +39,21 @@ RUN version=$(php -r "echo PHP_MAJOR_VERSION.PHP_MINOR_VERSION;") \
 
 RUN mkdir /var/log/php-fpm/
 RUN rm /usr/local/etc/php-fpm.d/zz-docker.conf
-ADD www.conf /usr/local/etc/php-fpm.d/www.conf
+ADD ./www.conf /usr/local/etc/php-fpm.d/www.conf
 
 RUN apk add --no-cache ssmtp
-ADD ssmtp.conf /etc/ssmtp/ssmtp.conf
+ADD ./ssmtp.conf /etc/ssmtp/ssmtp.conf
 
-FROM base as ioncube
-RUN curl -o ioncube_loaders_lin_x86-64.tar.gz http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz \
-	&& tar xfz ioncube_loaders_lin_x86-64.tar.gz \
-	&& cp ioncube/ioncube_loader_lin_7.4.so /usr/local/lib/php/extensions/no-debug-non-zts-20180731/ \
-	&& echo "zend_extension=ioncube_loader_lin_7.4.so" > $PHP_INI_DIR/conf.d/00_docker-php-ext-ioncube_loader_lin_7.4.ini \
-	&& rm -Rf ioncube_loaders_lin_x86-64.tar.gz ioncube
+# FROM base as ioncube
+# RUN curl -o ioncube_loaders_lin_x86-64.tar.gz http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz \
+# 	&& tar xfz ioncube_loaders_lin_x86-64.tar.gz \
+# 	&& cp ioncube/ioncube_loader_lin_7.4.so /usr/local/lib/php/extensions/no-debug-non-zts-20180731/ \
+# 	&& echo "zend_extension=ioncube_loader_lin_7.4.so" > $PHP_INI_DIR/conf.d/00_docker-php-ext-ioncube_loader_lin_7.4.ini \
+# 	&& rm -Rf ioncube_loaders_lin_x86-64.tar.gz ioncube
 
 FROM base as xdebug
 RUN apk add --no-cache ${PHPIZE_DEPS} \
 	&& pecl install -o -f xdebug-2.9.5 \
 	&& docker-php-ext-enable xdebug \
 	&& apk del ${PHPIZE_DEPS}
-ADD xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
+ADD ./xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini

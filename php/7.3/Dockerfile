@@ -24,8 +24,8 @@ RUN apk add --no-cache libpng \
 
 # PECL extensions
 RUN apk add --no-cache ${PHPIZE_DEPS} \
-	&& pecl install -o -f redis \
-	&& docker-php-ext-enable redis-5.2.1 \
+	&& pecl install -o -f redis-5.2.1 \
+	&& docker-php-ext-enable redis \
 	&& apk del ${PHPIZE_DEPS}
 
 # Blackfire.io
@@ -39,10 +39,10 @@ RUN version=$(php -r "echo PHP_MAJOR_VERSION.PHP_MINOR_VERSION;") \
 
 RUN mkdir /var/log/php-fpm/
 RUN rm /usr/local/etc/php-fpm.d/zz-docker.conf
-ADD www.conf /usr/local/etc/php-fpm.d/www.conf
+ADD ./www.conf /usr/local/etc/php-fpm.d/www.conf
 
 RUN apk add --no-cache ssmtp
-ADD ssmtp.conf /etc/ssmtp/ssmtp.conf
+ADD ./ssmtp.conf /etc/ssmtp/ssmtp.conf
 
 FROM base as ioncube
 RUN curl -o ioncube_loaders_lin_x86-64.tar.gz http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz \
@@ -56,4 +56,4 @@ RUN apk add --no-cache ${PHPIZE_DEPS} \
 	&& pecl install -o -f xdebug-2.9.5 \
 	&& docker-php-ext-enable xdebug \
 	&& apk del ${PHPIZE_DEPS}
-ADD xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
+ADD ./xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
