@@ -9,7 +9,6 @@ services:
             - ./nginx/sites/:/etc/nginx/sites/
             - ./nginx/templates/:/etc/nginx/templates/
             - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-            - ./nginx/ports.nginx:/etc/nginx/ports.nginx
             - phpmyadmin_data:/phpmyadmin:ro
         network_mode: "host"
         environment:
