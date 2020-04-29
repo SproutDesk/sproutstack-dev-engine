@@ -1,3 +1,5 @@
 /*
 !/.gitignore
 !/examples/
+!/adminer.conf
+!/phpmyadmin.conf
