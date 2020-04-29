@@ -2,7 +2,6 @@ version: '3.4'
 services:
     nginx:
         image: sproutstack/nginx
-        build: ./nginx
         container_name: ss_nginx
         volumes:
             - ./workspace:/workspace
@@ -17,7 +16,6 @@ services:
             - USERID=${USERID:-1000}
     varnish:
         image: sproutstack/varnish
-        build: ./varnish
         container_name: ss_varnish
         network_mode: "host"
         volumes:
@@ -27,9 +25,6 @@ services:
             - VARNISH_ENABLE=${VARNISH_ENABLE:-false}
     phpfpm5.6:
         image: sproutstack/phpfpm:5.6${PHP_EXTENSION}
-        build:
-            context: ./php/5.6
-            target: ${PHP_EXTENSION:-base}
         container_name: ss_phpfpm5.6
         user: '${USERID:-1000}:${GROUPID:-1000}'
         cap_add:
@@ -46,9 +41,6 @@ services:
             - PHP56_ENABLE=${PHP56_ENABLE:-true}
     phpfpm7.0:
         image: sproutstack/phpfpm:7.0${PHP_EXTENSION}
-        build:
-            context: ./php/7.0
-            target: ${PHP_EXTENSION:-base}
         container_name: ss_phpfpm7.0
         user: '${USERID:-1000}:${GROUPID:-1000}'
         cap_add:
@@ -65,9 +57,6 @@ services:
             - PHP70_ENABLE=${PHP70_ENABLE:-true}
     phpfpm7.1:
         image: sproutstack/phpfpm:7.1${PHP_EXTENSION}
-        build:
-            context: ./php/7.1
-            target: ${PHP_EXTENSION:-base}
         container_name: ss_phpfpm7.1
         user: '${USERID:-1000}:${GROUPID:-1000}'
         cap_add:
@@ -84,9 +73,6 @@ services:
             - PHP71_ENABLE=${PHP71_ENABLE:-true}
     phpfpm7.2:
         image: sproutstack/phpfpm:7.2${PHP_EXTENSION}
-        build:
-            context: ./php/7.2
-            target: ${PHP_EXTENSION:-base}
         container_name: ss_phpfpm7.2
         user: '${USERID:-1000}:${GROUPID:-1000}'
         cap_add:
@@ -103,9 +89,6 @@ services:
             - PHP72_ENABLE=${PHP72_ENABLE:-true}
     phpfpm7.3:
         image: sproutstack/phpfpm:7.3${PHP_EXTENSION}
-        build:
-            context: ./php/7.3
-            target: ${PHP_EXTENSION:-base}
         container_name: ss_phpfpm7.3
         user: '${USERID:-1000}:${GROUPID:-1000}'
         cap_add:
@@ -122,9 +105,6 @@ services:
             - PHP73_ENABLE=${PHP73_ENABLE:-true}
     phpfpm7.4:
         image: sproutstack/phpfpm:7.4${PHP_EXTENSION}
-        build:
-            context: ./php/7.4
-            target: ${PHP_EXTENSION:-base}
         container_name: ss_phpfpm7.4
         user: '${USERID:-1000}:${GROUPID:-1000}'
         cap_add:
@@ -157,7 +137,6 @@ services:
         command: /bin/sh -c "/bin/${REDIS_ENABLE:-false} && redis-server"
     phpmyadmin:
         image: sproutstack/phpmyadmin
-        build: ./php/phpmyadmin
         container_name: ss_phpmyadmin
         ports:
             - 9306:9000
