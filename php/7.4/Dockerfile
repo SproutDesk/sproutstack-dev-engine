@@ -44,6 +44,9 @@ ADD ./www.conf /usr/local/etc/php-fpm.d/www.conf
 RUN apk add --no-cache ssmtp
 ADD ./ssmtp.conf /etc/ssmtp/ssmtp.conf
 
+ENV PHP74_ENABLE=true
+CMD /bin/sh -c "/bin/${PHP74_ENABLE:-true} && php-fpm"
+
 # FROM base as ioncube
 # RUN curl -o ioncube_loaders_lin_x86-64.tar.gz http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz \
 # 	&& tar xfz ioncube_loaders_lin_x86-64.tar.gz \

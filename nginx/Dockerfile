@@ -16,3 +16,6 @@ ADD templates/ /etc/nginx/templates/
 
 RUN rm -rf /usr/share/nginx/html
 ADD html/ /usr/share/nginx/html
+
+ENV USERID=1000
+CMD /bin/sh -c "(adduser -D -H -u ${USERID:-1000} www-data || true) >/dev/null && exec nginx -g 'daemon off;'"
