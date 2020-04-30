@@ -43,6 +43,35 @@ jobs:
           echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
           docker push ${VENDOR_NAME}/nginx:latest
 
+  phpfpm:
+    strategy:
+      matrix:
+        version: [ 5.6, 7.0, 7.1, 7.2, 7.3, 7.4 ]
+      fail-fast: false
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 100
+      - uses: marceloprado/has-changed-path@master
+        id: changed
+        with:
+          paths: php/${{ matrix.version }}/**
+      - name: Build PHP${{ matrix.version }}
+        if: steps.changed-front.outputs.changed == 'true'
+        run: |
+          docker build php/${{ matrix.version }} --tag ${VENDOR_NAME}/phpfpm:${{ matrix.version }} --target base
+          docker build php/${{ matrix.version }} --tag ${VENDOR_NAME}/phpfpm:${{ matrix.version }}xdebug --target xdebug
+          docker build php/${{ matrix.version }} --tag ${VENDOR_NAME}/phpfpm:${{ matrix.version }}ioncube --target ioncube
+      - name: Push images
+        if: steps.changed-front.outputs.changed == 'true'
+        run: |
+          echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+          docker push ${VENDOR_NAME}/phpfpm:${{ matrix.version }}
+          docker push ${VENDOR_NAME}/phpfpm:${{ matrix.version }}xdebug
+          docker push ${VENDOR_NAME}/phpfpm:${{ matrix.version }}ioncube
+
   phpfpm5.6:
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
