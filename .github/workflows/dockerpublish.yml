@@ -22,83 +22,213 @@ jobs:
   #           docker build . --file Dockerfile
   #         fi
 
-  push:
+  nginx:
     # needs: test
-
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
-
     steps:
       - uses: actions/checkout@v2
-
+        with:
+          fetch-depth: 100
+      - uses: marceloprado/has-changed-path@master
+        id: changed
+        with:
+          paths: nginx/**
       - name: Build nginx
+        if: steps.changed-front.outputs.changed == 'true'
         run: docker build nginx --tag ${VENDOR_NAME}/nginx
+      - name: Push images
+        if: steps.changed-front.outputs.changed == 'true'
+        run: |
+          echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+          docker push ${VENDOR_NAME}/nginx:latest
 
+  phpfpm5.6:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 100
+      - uses: marceloprado/has-changed-path@master
+        id: changed
+        with:
+          paths: php/5.6/**
       - name: Build PHP5.6
+        if: steps.changed-front.outputs.changed == 'true'
         run: |
           docker build php/5.6 --tag ${VENDOR_NAME}/phpfpm:5.6 --target base
           docker build php/5.6 --tag ${VENDOR_NAME}/phpfpm:5.6xdebug --target xdebug
           docker build php/5.6 --tag ${VENDOR_NAME}/phpfpm:5.6ioncube --target ioncube
+      - name: Push images
+        if: steps.changed-front.outputs.changed == 'true'
+        run: |
+          echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+          docker push ${VENDOR_NAME}/phpfpm:5.6
+          docker push ${VENDOR_NAME}/phpfpm:5.6xdebug
+          docker push ${VENDOR_NAME}/phpfpm:5.6ioncube
+
+  phpfpm7.0:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 100
+      - uses: marceloprado/has-changed-path@master
+        id: changed
+        with:
+          paths: php/7.0/**
       - name: Build PHP7.0
+        if: steps.changed-front.outputs.changed == 'true'
         run: |
           docker build php/7.0 --tag ${VENDOR_NAME}/phpfpm:7.0 --target base
           docker build php/7.0 --tag ${VENDOR_NAME}/phpfpm:7.0xdebug --target xdebug
           docker build php/7.0 --tag ${VENDOR_NAME}/phpfpm:7.0ioncube --target ioncube
+      - name: Push images
+        if: steps.changed-front.outputs.changed == 'true'
+        run: |
+          echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+          docker push ${VENDOR_NAME}/phpfpm:7.0
+          docker push ${VENDOR_NAME}/phpfpm:7.0xdebug
+          docker push ${VENDOR_NAME}/phpfpm:7.0ioncube
+
+  phpfpm7.1:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 100
+      - uses: marceloprado/has-changed-path@master
+        id: changed
+        with:
+          paths: php/7.1/**
       - name: Build PHP7.1
+        if: steps.changed-front.outputs.changed == 'true'
         run: |
           docker build php/7.1 --tag ${VENDOR_NAME}/phpfpm:7.1 --target base
           docker build php/7.1 --tag ${VENDOR_NAME}/phpfpm:7.1xdebug --target xdebug
           docker build php/7.1 --tag ${VENDOR_NAME}/phpfpm:7.1ioncube --target ioncube
+      - name: Push images
+        if: steps.changed-front.outputs.changed == 'true'
+        run: |
+          echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+          docker push ${VENDOR_NAME}/phpfpm:7.1
+          docker push ${VENDOR_NAME}/phpfpm:7.1xdebug
+          docker push ${VENDOR_NAME}/phpfpm:7.1ioncube
+
+  phpfpm7.2:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 100
+      - uses: marceloprado/has-changed-path@master
+        id: changed
+        with:
+          paths: php/7.2/**
       - name: Build PHP7.2
+        if: steps.changed-front.outputs.changed == 'true'
         run: |
           docker build php/7.2 --tag ${VENDOR_NAME}/phpfpm:7.2 --target base
           docker build php/7.2 --tag ${VENDOR_NAME}/phpfpm:7.2xdebug --target xdebug
           docker build php/7.2 --tag ${VENDOR_NAME}/phpfpm:7.2ioncube --target ioncube
+      - name: Push images
+        if: steps.changed-front.outputs.changed == 'true'
+        run: |
+          echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+          docker push ${VENDOR_NAME}/phpfpm:7.2
+          docker push ${VENDOR_NAME}/phpfpm:7.2xdebug
+          docker push ${VENDOR_NAME}/phpfpm:7.2ioncube
+
+  phpfpm7.3:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 100
+      - uses: marceloprado/has-changed-path@master
+        id: changed
+        with:
+          paths: php/7.3/**
       - name: Build PHP7.3
+        if: steps.changed-front.outputs.changed == 'true'
         run: |
           docker build php/7.3 --tag ${VENDOR_NAME}/phpfpm:7.3 --target base
           docker build php/7.3 --tag ${VENDOR_NAME}/phpfpm:7.3xdebug --target xdebug
           docker build php/7.3 --tag ${VENDOR_NAME}/phpfpm:7.3ioncube --target ioncube
-      - name: Build PHP7.4
-        run: |
-          docker build php/7.4 --tag ${VENDOR_NAME}/phpfpm:latest --target base
-          docker build php/7.4 --tag ${VENDOR_NAME}/phpfpm:7.4 --target base
-          docker build php/7.4 --tag ${VENDOR_NAME}/phpfpm:7.4xdebug --target xdebug
-
-      - name: Build phpMyAdmin
-        run: |
-          docker build php/phpmyadmin --tag ${VENDOR_NAME}/phpmyadmin
-
-      - name: Build Varnish
-        run: |
-          docker build varnish --tag ${VENDOR_NAME}/varnish
-
-      - name: Log into registry
-        run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
-
       - name: Push images
+        if: steps.changed-front.outputs.changed == 'true'
         run: |
-          docker push ${VENDOR_NAME}/nginx:latest
-
-          docker push ${VENDOR_NAME}/phpfpm:5.6
-          docker push ${VENDOR_NAME}/phpfpm:5.6xdebug
-          docker push ${VENDOR_NAME}/phpfpm:5.6ioncube
-          docker push ${VENDOR_NAME}/phpfpm:7.0
-          docker push ${VENDOR_NAME}/phpfpm:7.0xdebug
-          docker push ${VENDOR_NAME}/phpfpm:7.0ioncube
-          docker push ${VENDOR_NAME}/phpfpm:7.1
-          docker push ${VENDOR_NAME}/phpfpm:7.1xdebug
-          docker push ${VENDOR_NAME}/phpfpm:7.1ioncube
-          docker push ${VENDOR_NAME}/phpfpm:7.2
-          docker push ${VENDOR_NAME}/phpfpm:7.2xdebug
-          docker push ${VENDOR_NAME}/phpfpm:7.2ioncube
+          echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
           docker push ${VENDOR_NAME}/phpfpm:7.3
           docker push ${VENDOR_NAME}/phpfpm:7.3xdebug
           docker push ${VENDOR_NAME}/phpfpm:7.3ioncube
+
+  phpfpm7.4:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 100
+      - uses: marceloprado/has-changed-path@master
+        id: changed
+        with:
+          paths: php/7.4/**
+      - name: Build PHP7.4
+        if: steps.changed-front.outputs.changed == 'true'
+        run: |
+          docker build php/7.4 --tag ${VENDOR_NAME}/phpfpm:7.4 --target base
+          docker build php/7.4 --tag ${VENDOR_NAME}/phpfpm:7.xdebug --target xdebug
+          docker build php/7.4 --tag ${VENDOR_NAME}/phpfpm:latest --target base
+      - name: Push images
+        if: steps.changed-front.outputs.changed == 'true'
+        run: |
+          echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
           docker push ${VENDOR_NAME}/phpfpm:7.4
           docker push ${VENDOR_NAME}/phpfpm:7.4xdebug
           docker push ${VENDOR_NAME}/phpfpm:latest
 
+  phpmyadmin:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 100
+      - uses: marceloprado/has-changed-path@master
+        id: changed
+        with:
+          paths: php/phpmyadmin/**
+      - name: Build phpMyAdmin
+        if: steps.changed-front.outputs.changed == 'true'
+        run: docker build php/phpmyadmin --tag ${VENDOR_NAME}/phpmyadmin
+      - name: Push images
+        if: steps.changed-front.outputs.changed == 'true'
+        run: |
+          echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
           docker push ${VENDOR_NAME}/phpmyadmin:latest
 
+  varnish:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 100
+      - uses: marceloprado/has-changed-path@master
+        id: changed
+        with:
+          paths: varnish/**
+      - name: Build Varnish
+        if: steps.changed-front.outputs.changed == 'true'
+        run: docker build varnish --tag ${VENDOR_NAME}/varnish
+      - name: Push images
+        if: steps.changed-front.outputs.changed == 'true'
+        run: |
+          echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
           docker push ${VENDOR_NAME}/varnish:latest
