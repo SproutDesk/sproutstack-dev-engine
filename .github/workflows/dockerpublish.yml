@@ -2,8 +2,8 @@ name: Docker
 
 on:
   push:
-    branches:
-      - master
+    tags:
+      - build-*
 env:
   VENDOR_NAME: sproutstack
 
