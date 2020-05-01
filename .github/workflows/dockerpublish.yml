@@ -61,15 +61,15 @@ jobs:
           docker push ${VENDOR_NAME}/phpfpm:${{ matrix.version }}xdebug
 
       - name: Build PHP${{ matrix.version }} with ioncube loader
-        if: ${{ steps.changed.outputs.changed == 'true' && matrix.version != '7.4' }}
+        if: ${{ steps.changed.outputs.changed == 'true' && matrix.version != '7.4' }} # 7.4 Doesn't have a stable ioncube loader
         run: |
           docker build php/${{ matrix.version }} --tag ${VENDOR_NAME}/phpfpm:${{ matrix.version }}ioncube --target ioncube
           docker push ${VENDOR_NAME}/phpfpm:${{ matrix.version }}ioncube
 
-      - name: Build Latest PHP${{ matrix.version }} Tag
-        if: ${{ steps.changed.outputs.changed == 'true' && matrix.version == '7.4' }}
+      - name: Build Latest PHP${{ matrix.version }} Version
+        if: ${{ steps.changed.outputs.changed == 'true' && matrix.version == '7.4' }} # Change this version number to the most up to date PHP version
         run: |
-          docker build php/${{ matrix.version }} --tag ${VENDOR_NAME}/phpfpm:${{ matrix.version }} --target base
+          docker build php/${{ matrix.version }} --tag ${VENDOR_NAME}/phpfpm:latest --target base
           docker push ${VENDOR_NAME}/phpfpm:latest
 
   phpmyadmin:
