@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - master
-    tags:
-      - build-*
 env:
   VENDOR_NAME: sproutstack
 
@@ -45,31 +43,31 @@ jobs:
       - uses: marceloprado/has-changed-path@master
         id: changed
         with:
-          paths: php/${{ matrix.version }}/**
+          paths: php/${{ matrix.version }}
       - name: Login to registry
-        if: steps.changed-front.outputs.changed == 'true'
+        if: steps.changed.outputs.changed == 'true'
         run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
 
       - name: Build PHP${{ matrix.version }} Base
-        if: steps.changed-front.outputs.changed == 'true'
+        if: steps.changed.outputs.changed == 'true'
         run: |
           docker build php/${{ matrix.version }} --tag ${VENDOR_NAME}/phpfpm:${{ matrix.version }} --target base
           docker push ${VENDOR_NAME}/phpfpm:${{ matrix.version }}
 
       - name: Build PHP${{ matrix.version }} with xdebug
-        if: steps.changed-front.outputs.changed == 'true'
+        if: steps.changed.outputs.changed == 'true'
         run: |
           docker build php/${{ matrix.version }} --tag ${VENDOR_NAME}/phpfpm:${{ matrix.version }}xdebug --target xdebug
           docker push ${VENDOR_NAME}/phpfpm:${{ matrix.version }}xdebug
 
       - name: Build PHP${{ matrix.version }} with ioncube loader
-        if: ${{ steps.changed-front.outputs.changed == 'true' && matrix.version != '7.4' }}
+        if: ${{ steps.changed.outputs.changed == 'true' && matrix.version != '7.4' }}
         run: |
           docker build php/${{ matrix.version }} --tag ${VENDOR_NAME}/phpfpm:${{ matrix.version }}ioncube --target ioncube
           docker push ${VENDOR_NAME}/phpfpm:${{ matrix.version }}ioncube
 
       - name: Build Latest PHP${{ matrix.version }} Tag
-        if: ${{ steps.changed-front.outputs.changed == 'true' && matrix.version == '7.4' }}
+        if: ${{ steps.changed.outputs.changed == 'true' && matrix.version == '7.4' }}
         run: |
           docker build php/${{ matrix.version }} --tag ${VENDOR_NAME}/phpfpm:${{ matrix.version }} --target base
           docker push ${VENDOR_NAME}/phpfpm:latest
