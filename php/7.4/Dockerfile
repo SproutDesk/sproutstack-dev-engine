@@ -47,13 +47,6 @@ ADD ./ssmtp.conf /etc/ssmtp/ssmtp.conf
 ENV PHP74_ENABLE=true
 CMD /bin/sh -c "/bin/${PHP74_ENABLE:-true} && php-fpm"
 
-# FROM base as ioncube
-# RUN curl -o ioncube_loaders_lin_x86-64.tar.gz http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz \
-# 	&& tar xfz ioncube_loaders_lin_x86-64.tar.gz \
-# 	&& cp ioncube/ioncube_loader_lin_7.4.so /usr/local/lib/php/extensions/no-debug-non-zts-20180731/ \
-# 	&& echo "zend_extension=ioncube_loader_lin_7.4.so" > $PHP_INI_DIR/conf.d/00_docker-php-ext-ioncube_loader_lin_7.4.ini \
-# 	&& rm -Rf ioncube_loaders_lin_x86-64.tar.gz ioncube
-
 FROM base as xdebug
 RUN apk add --no-cache ${PHPIZE_DEPS} \
 	&& pecl install -o -f xdebug-2.9.5 \

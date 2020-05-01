@@ -148,13 +148,24 @@ services:
             - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD:-root}
         volumes:
             - mysql:/var/lib/mysql
-        command: /bin/sh -c "/bin/${MYSQL_ENABLE:-true} && mysqld --user=mysql"
+        entrypoint: /bin/sh -c "/bin/${MYSQL_ENABLE:-true} && docker-entrypoint.sh mysqld"
+    postgres:
+        image: postgres:${POSTGRES_VERSION:-12}-alpine
+        container_name: ss_postgres
+        ports:
+            - "5432:5432"
+        volumes:
+            - postgres:/var/lib/postgresql/data
+        environment:
+            POSTGRES_USER: ${POSTGRES_USER:-root}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-root}
+        entrypoint: /bin/sh -c "/bin/${POSTGRES_ENABLE:-true} && docker-entrypoint.sh postgres"
     redis:
         image: redis:alpine
         container_name: ss_redis
         ports:
             - "6379:6379"
-        command: /bin/sh -c "/bin/${REDIS_ENABLE:-false} && redis-server"
+        entrypoint: /bin/sh -c "/bin/${REDIS_ENABLE:-false} && docker-entrypoint.sh redis-server"
     phpmyadmin:
         image: sproutstack/phpmyadmin
         build: ./php/phpmyadmin
@@ -191,3 +202,4 @@ services:
 volumes:
     mysql:
     phpmyadmin_data:
+    postgres:
