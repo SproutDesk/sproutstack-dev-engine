@@ -60,5 +60,3 @@ RUN apk add --no-cache ${PHPIZE_DEPS} \
 	&& docker-php-ext-enable xdebug \
 	&& apk del ${PHPIZE_DEPS}
 ADD ./xdebug.ini /usr/local/etc/php/conf.d/xdebug.ini
-
-#Test GitHub Actions Run
