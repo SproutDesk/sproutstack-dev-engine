@@ -46,9 +46,10 @@ jobs:
   phpfpm:
     strategy:
       matrix:
-        version: [ 5.6, 7.0, 7.1, 7.2, 7.3, 7.4 ]
+        version: [ '5.6', '7.0', '7.1', '7.2', '7.3', '7.4' ]
       fail-fast: false
     runs-on: ubuntu-latest
+    continue-on-error: true
     if: github.event_name == 'push'
     steps:
       - uses: actions/checkout@v2
@@ -58,21 +59,35 @@ jobs:
         id: changed
         with:
           paths: php/${{ matrix.version }}/**
-      - name: Build PHP${{ matrix.version }}
+      - name: Login to registry
+        if: steps.changed-front.outputs.changed == 'true'
+        run: echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+
+      - name: Build PHP${{ matrix.version }} Base
         if: steps.changed-front.outputs.changed == 'true'
         run: |
           docker build php/${{ matrix.version }} --tag ${VENDOR_NAME}/phpfpm:${{ matrix.version }} --target base
-          docker build php/${{ matrix.version }} --tag ${VENDOR_NAME}/phpfpm:${{ matrix.version }}xdebug --target xdebug
-          docker build php/${{ matrix.version }} --tag ${VENDOR_NAME}/phpfpm:${{ matrix.version }}ioncube --target ioncube
-      - name: Push images
+          docker push ${VENDOR_NAME}/phpfpm:${{ matrix.version }}
+
+      - name: Build PHP${{ matrix.version }} with xdebug
         if: steps.changed-front.outputs.changed == 'true'
         run: |
-          echo "${{ secrets.DOCKER_HUB_PASSWORD }}" | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
-          docker push ${VENDOR_NAME}/phpfpm:${{ matrix.version }}
+          docker build php/${{ matrix.version }} --tag ${VENDOR_NAME}/phpfpm:${{ matrix.version }}xdebug --target xdebug
           docker push ${VENDOR_NAME}/phpfpm:${{ matrix.version }}xdebug
+
+      - name: Build PHP${{ matrix.version }} with ioncube loader
+        if: ${{ steps.changed-front.outputs.changed == 'true' && matrix.version != '7.4' }}
+        run: |
+          docker build php/${{ matrix.version }} --tag ${VENDOR_NAME}/phpfpm:${{ matrix.version }}ioncube --target ioncube
           docker push ${VENDOR_NAME}/phpfpm:${{ matrix.version }}ioncube
 
-  phpfpm5.6:
+      - name: Build Latest PHP${{ matrix.version }} Tag
+        if: ${{ steps.changed-front.outputs.changed == 'true' && matrix.version == '7.4' }}
+        run: |
+          docker build php/${{ matrix.version }} --tag ${VENDOR_NAME}/phpfpm:${{ matrix.version }} --target base
+          docker push ${VENDOR_NAME}/phpfpm:latest
+
+  phpfpm56:
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
     steps:
@@ -97,7 +112,7 @@ jobs:
           docker push ${VENDOR_NAME}/phpfpm:5.6xdebug
           docker push ${VENDOR_NAME}/phpfpm:5.6ioncube
 
-  phpfpm7.0:
+  phpfpm70:
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
     steps:
@@ -122,7 +137,7 @@ jobs:
           docker push ${VENDOR_NAME}/phpfpm:7.0xdebug
           docker push ${VENDOR_NAME}/phpfpm:7.0ioncube
 
-  phpfpm7.1:
+  phpfpm71:
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
     steps:
@@ -147,7 +162,7 @@ jobs:
           docker push ${VENDOR_NAME}/phpfpm:7.1xdebug
           docker push ${VENDOR_NAME}/phpfpm:7.1ioncube
 
-  phpfpm7.2:
+  phpfpm72:
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
     steps:
@@ -172,7 +187,7 @@ jobs:
           docker push ${VENDOR_NAME}/phpfpm:7.2xdebug
           docker push ${VENDOR_NAME}/phpfpm:7.2ioncube
 
-  phpfpm7.3:
+  phpfpm73:
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
     steps:
@@ -197,7 +212,7 @@ jobs:
           docker push ${VENDOR_NAME}/phpfpm:7.3xdebug
           docker push ${VENDOR_NAME}/phpfpm:7.3ioncube
 
-  phpfpm7.4:
+  phpfpm74:
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
     steps:
