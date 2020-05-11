@@ -1,9 +1,8 @@
 # SproutStack Dev Engine
-#### _Built by SproutDesk_
 
-A set of generic PHP docker images, along with a few other useful tools, to host PHP web applications on your machine for development.
+A set of containers to host PHP web applications, along with a few other useful tools, on your local machine.
 
-This was built to handle multiple virtual hosts to make switching between projects a breeze, using defined hostnames other than the normal `localhost`, each being able to run their respective PHP versions.
+This was built to handle multiple virtual hosts to make switching between projects a breeze, using defined hostnames instead of just `localhost`, each being able to run their respective PHP versions simultaneously.
 
 ## Getting Started
 
@@ -12,91 +11,89 @@ This was built to handle multiple virtual hosts to make switching between projec
 * Docker
 * Docker Compose
 * Git
-* Linux (preferred)
-* Your UNIX user must be a member of the `docker` group & must not be the `root` user.
+* Linux/Windows (with WSL2)
+* Your user must not be the `root` user & must be a member of the `docker` group
 
 ### Installing
 
 Clone this repo to where you want your development environment to be located, e.g. `$HOME/sproutstack/`
 
 ```
-$ git clone https://github.com/SproutStack/dev-env.git $HOME/sproutstack
+$ git clone https://github.com/SproutDesk/sproutstack-dev-engine.git $HOME/sproutstack
 ```
 
-Copy the `.env.example` file to `.env`. Then modify the `.env` file to change the User/Group IDs to match the user you're running as.
+Copy the `.env.example` file to `.env` and modify as needed.
 
-**Note** The default MySQL password is defined here as "root".
-```
-$ id -u                   #This returns your User ID
-$ id -g                   #This returns your Group ID
-$ cp .env.example .env    #Copy the example ENV file over
-$ vim .env                #Modify the IDs here (use any text editor)
-```
-
-Alternatively you can run this one-liner from the root of the project.
-```
-$ echo "USERID=`id -u`\nGROUPID=`id -g`\nMYSQL_ROOT_PASSWORD=root" > .env
-```
-
-Now you can run `docker-compose up -d` to boot up the default SproutStack development environment. Note that on first-run it may take a short while as it will need to download the base images to run each container.
+Run `docker-compose up -d` to boot up the default SproutStack dev engine.
+>**Note:** first-run it may take a short while as it will need to download the images from the container registry to run each container.*
 
 ## Usage
 
-Applications should be built within the `workspace/` folder in the project, which is mounted to `/workspace` in the Nginx & PHP containers.
-e.g. `/home/developer/sproutstack/workspace/` on the host would map its path to `/workspace/` within the Nginx & PHP containers
+Use your .env file to define true/false values for tools you'd like to enable/disable.
+> **Note:** The value of MYSQL_ROOT_PASSWORD is only used on first initialisation of the database volume
 
-### Creating a new virtualhost/server
+Applications should be built within the `workspace/` folder in the project, which is mounted to `/workspace` in the Nginx & PHP containers.
+e.g. `/home/myusername/sproutstack/workspace/` on the host would map its path to `/workspace/` within the Nginx & PHP containers
+
+### Creating a new virtualhost/server (Nginx)
 
 //TODO: write about nginx
 
 goto nginx/sites/ & copy an example. Change the server_name, root, and PHP version to what you need.
 
-### Using xDebug
+### Using PHP Extensions
 
-To activate xDebug, open your `.env` in a text editor, change the `PHP_EXTENSION` variable to `xdebug` and reload the PHP containers with a simple `docker-compose down` and `docker-compose up -d`
+(Optional) To use one of the available extensions, open `.env` in a text editor, assign a value to the `PHP_EXTENSION` variable and reload the PHP containers with a simple `docker-compose down` and `docker-compose up -d`
 
-The xdebug options can be found in `php/xdebug.ini`.
-You can find the other xdebug options available [HERE](https://xdebug.org/docs/all_settings)
+**Xdebug** is enabled by default unless changed in your `.env` file. Xdebug options can be found in `php/xdebug.ini`.
+You can find other Xdebug options available [HERE](https://xdebug.org/docs/all_settings)
 
-### Database Management
+**Ioncube loader** be used with Xdebug, hence it being its own version.
 
-phpMyAdmin comes packaged with the development environment as its own container. This can be accessed via the webserver with the URL `http://phpmyadmin.local/` in your browser.
-Adminer also comes committed into the `/workspace/adminer/` directory, and for those who aren't a big fan of phpMyAdmin (I personally think it's a lil' clunky) you can manage your databases under `http://adminer.local/`
+**Blackfire** probe is installed to PHP to report back to the local Blackfire agent on port `8707`. If you don't have a Blackfire agent running locally, you can enable the built in agent in your `.env` file
 
-### Varnish Caching
+### Database Management (MySQL and PostgreSQL)
 
-//TODO: write about caching.
+phpMyAdmin comes packaged as its own container, accessed via the webserver with the URL `http://phpmyadmin.local/` in your browser or via FastCGI/FPM on port 9306.
+Adminer also comes committed to `/workspace/adminer/` to work with either MySQL or PostgreSQL. Accessible under `http://adminer.local/`
 
+### Reverse-Proxy Cache (Varnish)
 
-### Email testing
+Varnish cached versions of sites can be viewed under port `:8888`, for example: `http://adminer.local:8888/`
 
-Each PHP container comes packaged with SSMTP to relay mail to `localhost:1025`. This by default routes to the MailHog container, which will trap all emails sent by PHP's mail function.
+The default VCL file is located under `varnish/default.vcl` and changes can be activated by restarting the Varnish container with `docker-compose restart varnish`
+
+> **Note:** Debug headers are sent with each response, including cache age, grace, and hits
+
+### Email testing (Mailhog/SSMTP)
+
+Each PHP container comes packaged with SSMTP to relay mail to `localhost:1025` (configurable). This by default routes to the MailHog container, which will trap all emails sent by PHP's mail function.
 
 You can view trapped emails in your browser by visiting `http://localhost:8025`
 
 For more info on using MailHog, see [HERE](https://hub.docker.com/r/mailhog/mailhog/)
 
-If you'd rather the emails went out somewhere else, you can always reconfigure the config here at `php/ssmtp.conf` since this mounts to the containers
+> **Note:** To direct emails to an external server, you can reconfigure the config here at `php/ssmtp.conf` (no restart needed). See [HERE](https://wiki.archlinux.org/index.php/SSMTP) for config options
 
 ### Using Redis
 
-Redis is available to your application at `127.0.0.1:6379`. No setup is required for local development.
-
+Redis is available to your application at port `6379`. No further setup is required for local development.
 
 ## Specification
 ### Images
-* **PHP**: 5.6.x, 7.0.x, 7.1.x, 7.2.x, 7.3.x, 7.4.x - Extended from official Alpine image
-* **Nginx**: 1.18 - Extended from official Alpine image
-* **MySQL**: Official Docker image. Version Configurable
-* **Varnish**: VCL 4.0, Engine 6.1 - Alpine image
-* **Redis**: Latest official Alpine image
-* **PHPMyAdmin**: Latest official image
-* **MailHog**: Latest official image
+* **PHP**: Versions 5.6, 7.0, 7.1, 7.2, 7.3, 7.4
+* **Nginx**: Version 1.18
+* **MySQL**: Version Configurable in `.env`
+* **Varnish**: Version 6.1 (VCL 4.0)
+* **Redis**: Version 6.x
+* **PHPMyAdmin**: Extended latest image
+* **MailHog**: Version 1.0
+* **Blackfire Agent**: Version 1.34
 
 ### Networking/Ports
 Nginx, PHP-FPM, and Varnish are run on the host network, rather than behind the docker bridge.
 All other containers are bound to ports through the docker bridge.
-#### Ports Bound
+#### Ports Used
 * **PHP**: 90xx _(9056 for PHP5.6, 9070 for PHP7.0, 9071 for PHP7.1, etc...)_
 * **Nginx**: 80 _(HTTP)_ & 443 _(HTTPS - self-signed SSL)_
 * **MySQL**: 3306
@@ -107,8 +104,15 @@ All other containers are bound to ports through the docker bridge.
 * **MailHog**: 1025 _(SMTP)_ & 8025 _(HTTP GUI)_
 * **Blackfire Agent**: 8707
 
-## Authors
+## Roadmap
+Short-term goals:
+* CLI Tool to semi-automate certain tasks
+* DNS resolution handler to automatically register local domains
+* Register local SSL certificates to OS trust store
 
-* **Rhys Botfield** - *Initial work* - [SproutDesk](https://sproutdesk.co.uk/)
+Long-term goals:
+* Management via GUI
 
-## License
+## Credits
+
+* [**Rhys Botfield**](https://rhysbotfield.co.uk/) - [SproutDesk](https://sproutdesk.co.uk/)
