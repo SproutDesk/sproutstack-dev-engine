@@ -13,6 +13,7 @@ RUN delgroup www-data
 ADD nginx.conf /etc/nginx/nginx.conf
 ADD fastcgi_params /etc/nginx/fastcgi_params
 ADD templates/ /etc/nginx/templates/
+ADD ports.nginx /etc/nginx/ports.nginx
 
 RUN rm -rf /usr/share/nginx/html
 ADD html/ /usr/share/nginx/html
