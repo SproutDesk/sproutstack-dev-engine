@@ -37,9 +37,31 @@ e.g. `/home/myusername/sproutstack/workspace/` on the host would map its path to
 
 ### Creating a new virtualhost/server (Nginx)
 
-//TODO: write about nginx
+The web server accepts connections using Nginx. The Virtual Host configurations are located under `nginx/sites/`. These can be configured like any other Virtual Host config or you can use one of the templates to make things a bit simpler.
 
-goto nginx/sites/ & copy an example. Change the server_name, root, and PHP version to what you need.
+To create a new Virtual Host:
+* Create a new `*.conf` file under `nginx/sites/`. e.g. `nginx/sites/example.conf`
+* Using the example below, or the examples in `nginx/sites/examples/`, replace the necessary parts to fit your purpose
+* Reload the Nginx service with `docker-compose restart nginx` or `docker-compose exec nginx nginx -s reload`
+    * You'll now have the Nginx listening for the new hostname
+* Assign the value you used for `server_name` to `127.0.0.1` in your `/etc/hosts`
+    * e.g. `127.0.0.1 example.local`
+* Flush your local DNS caches
+    * On Ubuntu, this is usually done with `$ sudo service systemd-resolved restart`
+* Start working
+
+> **Note:** You decide the PHP version the host uses by assigning `$FASTCGI_PASS` to its respective port. i.e. Port 9072 for PHP 7.2, Port 9074 for PHP 7.4, etc...
+
+Example:
+```
+server {
+    include ports.nginx; # This autobinds to ports 80 and 443 for HTTP and HTTPS.
+    server_name example.local; # The hostname you'd like to use.
+    root /workspace/example; # The root public webroot relative to the workspace
+    set $FASTCGI_PASS '127.0.0.1:9074'; # The PHP-FPM listener port.
+    include templates/php.nginx; # The generic PHP template to run via /index.php
+}
+```
 
 ### Using PHP Extensions
 
