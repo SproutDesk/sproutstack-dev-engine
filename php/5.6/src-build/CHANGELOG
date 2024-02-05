@@ -1,0 +1,7 @@
+- Updated Alpine to 3.19
+- Updated PHP to 5.6.40
+- Changed PHP source to use security backports from https://github.com/shivammathur/php-src-backports
+- Removed GPG key check for PHP source, using sha256 checksum instead
+- Change source extract function to filter tarball extraction with gzip instead of xz
+- Added package "bison" to build PHP configure script from source
+- Switch from libressl to openssl
