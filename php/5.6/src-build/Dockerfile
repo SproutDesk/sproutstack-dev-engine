@@ -70,6 +70,8 @@ RUN set -xe; \
 
 COPY docker-php-source /usr/local/bin/
 
+COPY freetype.patch /tmp/freetype.patch
+
 RUN set -xe \
 	&& apk add --no-cache --virtual .build-deps \
 		$PHPIZE_DEPS \
@@ -80,12 +82,15 @@ RUN set -xe \
 		libxml2-dev \
 		sqlite-dev \
 		bison \
+		patch \
 	\
 	&& export CFLAGS="$PHP_CFLAGS" \
 		CPPFLAGS="$PHP_CPPFLAGS" \
 		LDFLAGS="$PHP_LDFLAGS" \
 	&& docker-php-source extract \
 	&& cd /usr/src/php \
+	&& patch -p1 -i /tmp/freetype.patch \
+	&& rm /tmp/freetype.patch \
 	&& gnuArch="$(dpkg-architecture --query DEB_BUILD_GNU_TYPE)" \
 	&& ./buildconf --force \
 	&& ./configure \

@@ -4,4 +4,5 @@
 - Removed GPG key check for PHP source, using sha256 checksum instead
 - Change source extract function to filter tarball extraction with gzip instead of xz
 - Added package "bison" to build PHP configure script from source
-- Switch from libressl to openssl
+- Switch from libressl to openssl (Shivam's backports contains a patch for OpenSSL 3)
+- Inlcluded patch for PHP bug #76324 - modified for PHP 5.6
