@@ -1,6 +1,6 @@
-FROM php:5.6-fpm-alpine as base
+FROM sproutstack/phpfpm-src:5.6 as base
 
-MAINTAINER Rhys Botfield <rhys@sproutdesk.co.uk>
+LABEL maintainer="Rhys Botfield <rhys@sproutdesk.co.uk>"
 
 ENV _BUILD_DEPS \
 		libpng-dev \
